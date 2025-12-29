@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Validation Example</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Form Validation Example</h2>
+
+<form onsubmit="return validateForm()">
+
+    <label>Name:</label>
+    <input type="text" id="name" placeholder="Enter your name">
+           
+    <span class="error" id="nameError"></span>
+
+    <label>Credit Card Number:</label>
+    <input type="text" id="card" placeholder="Enter your credit card number"
+           onkeyup="moveFocus(this, 'cvv')">
+    <span class="error" id="cardError"></span>
+
+    <label>CVV:</label>
+    <input type="text" id="cvv" placeholder="Enter CVV"
+           onkeyup="moveFocus(this, 'month',3)">
+    <span class="error" id="cvvError"></span>
+
+    <label>Expiry Date:</label>
+    <div class="expiry">
+        <select id="month"></select>
+        <select id="year"></select>
+    </div>
+    <span class="error" id="dateError"></span>
+
+    <button type="submit">Submit</button>
+
+</form>
+
+<script src="script.js"></script>
+</body>
+</html>
