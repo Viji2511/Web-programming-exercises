@@ -1,2 +1,2 @@
 # Web-programming-exercises
-6th semester web programming practice lab exercises
+exercises to practise web programming without AI usage
