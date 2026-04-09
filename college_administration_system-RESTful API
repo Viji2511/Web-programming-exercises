@@ -1,0 +1,106 @@
+steps to create rails:
+
+rails create filename
+cd filename
+rails generate model Student name:string email:string course:string year_of_study:integer
+rails generate controller Api::Students
+rails db:migrate
+rails server
+
+code:
+app/models/student.rb
+
+class Student < ApplicationRecord
+  validates :name, presence: true
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :course, presence: true
+  validates :year_of_study, presence: true, numericality: { only_integer: true }
+
+  # Scope for search
+  scope :by_course, ->(course) { where(course: course) }
+end
+
+config/routes.rb
+
+Rails.application.routes.draw do
+  namespace :api do
+    resources :students do
+      collection do
+        get :search
+      end
+    end
+  end
+end
+
+app/controllers/api/students_controller.rb
+
+module Api
+  class StudentsController < ActionController::API   # ✅ API-only controller
+
+    before_action :set_student, only: [:show, :update, :destroy]
+
+    # GET /api/students
+    def index
+      students = Student.all
+      render json: students, status: :ok
+    end
+
+    # GET /api/students/:id
+    def show
+      render json: @student, status: :ok
+    end
+
+    # POST /api/students
+    def create
+      student = Student.new(student_params)
+
+      if student.save
+        render json: student, status: :created
+      else
+        render json: { errors: student.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    # PUT/PATCH /api/students/:id
+    def update
+      if @student.update(student_params)
+        render json: @student, status: :ok
+      else
+        render json: { errors: @student.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    # DELETE /api/students/:id
+    def destroy
+      @student.destroy
+      render json: { message: "Student deleted successfully" }, status: :ok
+    end
+
+    # GET /api/students/search?course=ECE
+    def search
+      if params[:course].present?
+        students = Student.by_course(params[:course])
+        render json: students, status: :ok
+      else
+        render json: { error: "Course parameter missing" }, status: :bad_request
+      end
+    end
+
+    private
+
+    # Find student safely
+    def set_student
+      @student = Student.find_by(id: params[:id])
+      unless @student
+        render json: { error: "Student not found" }, status: :not_found
+        return   # ✅ stop execution
+      end
+    end
+
+    # Strong parameters
+    def student_params
+      params.require(:student).permit(:name, :email, :course, :year_of_study)
+    end
+  end
+end
+
