@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Course Registration</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #eef2f7;
+}
+
+.container {
+    width: 420px;
+    margin: auto;
+    margin-top: 40px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gray;
+}
+
+h2 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px;
+    width: 48%;
+}
+
+#credits {
+    margin-top: 10px;
+    font-weight: bold;
+    color: green;
+}
+
+.hidden {
+    display: none;
+}
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Course Registration</h2>
+
+    <form id="regForm">
+
+        <!-- Name -->
+        <label>Student Name:</label>
+        <input type="text" id="name" placeholder="Enter your name">
+
+        <!-- Courses -->
+        <label>Select Courses:</label>
+        <input type="checkbox" class="course" value="3"> Math (3 credits)<br>
+        <input type="checkbox" class="course" value="4"> Science (4 credits)<br>
+        <input type="checkbox" class="course" value="2"> English (2 credits)<br>
+        <input type="checkbox" class="course" value="3"> Computer (3 credits)<br>
+
+        <!-- Total Credits -->
+        <div id="credits">Total Credits: 0</div>
+
+        <!-- Semester -->
+        <label>Select Semester:</label>
+        <input type="radio" name="sem" value="fall"> Fall
+        <input type="radio" name="sem" value="winter"> Winter
+        <input type="radio" name="sem" value="spring"> Spring
+
+        <!-- Timing (only for Fall) -->
+        <div id="timingDiv" class="hidden">
+            <label>Preferred Class Timing:</label>
+            <select id="timing">
+                <option value="">--Select--</option>
+                <option>Morning</option>
+                <option>Afternoon</option>
+                <option>Evening</option>
+            </select>
+        </div>
+
+        <!-- Buttons -->
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+
+        <!-- Message -->
+        <div id="message"></div>
+
+    </form>
+</div>
+
+<script>
+const courses = document.querySelectorAll(".course");
+const creditsDisplay = document.getElementById("credits");
+const timingDiv = document.getElementById("timingDiv");
+const message = document.getElementById("message");
+const form = document.getElementById("regForm");
+
+// Calculate total credits
+function calculateCredits() {
+    let total = 0;
+    courses.forEach(c => {
+        if (c.checked) {
+            total += parseInt(c.value);
+        }
+    });
+    creditsDisplay.innerText = "Total Credits: " + total;
+}
+
+// Update credits dynamically
+courses.forEach(c => {
+    c.addEventListener("change", calculateCredits);
+});
+
+// Show/hide timing for Fall semester
+document.querySelectorAll("input[name='sem']").forEach(radio => {
+    radio.addEventListener("change", () => {
+        if (radio.checked && radio.value === "fall") {
+            timingDiv.classList.remove("hidden");
+        } else {
+            timingDiv.classList.add("hidden");
+        }
+    });
+});
+
+// Form submission
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    message.innerText = "";
+
+    let name = document.getElementById("name").value.trim();
+    let selectedCourses = document.querySelectorAll(".course:checked");
+    let semester = document.querySelector("input[name='sem']:checked");
+    let timing = document.getElementById("timing").value;
+
+    let total = 0;
+    selectedCourses.forEach(c => total += parseInt(c.value));
+
+    // Validation
+    if (name.length < 2) {
+        showMessage("Name must be at least 2 characters", "red");
+        return;
+    }
+
+    if (selectedCourses.length === 0) {
+        showMessage("Select at least one course", "red");
+        return;
+    }
+
+    if (!semester) {
+        showMessage("Select a semester", "red");
+        return;
+    }
+
+    if (semester.value === "fall" && timing === "") {
+        showMessage("Select preferred class timing for Fall", "red");
+        return;
+    }
+
+    // Data object
+    let data = {
+        name: name,
+        courses: Array.from(selectedCourses).map(c => c.value),
+        semester: semester.value,
+        timing: timing,
+        credits: total
+    };
+
+    console.log("Sending to server:", data);
+
+    // AJAX Simulation
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "fake-server", true);
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            showMessage("Registration Successful! Total Credits: " + total, "green");
+        } else {
+            showMessage("Registration Failed!", "red");
+        }
+    };
+
+    // Simulate backend response (always success here)
+    setTimeout(() => {
+        xhr.status = 200;   // keep 200 for success
+        xhr.onload();
+    }, 1000);
+});
+
+// Helper function
+function showMessage(text, color) {
+    message.style.color = color;
+    message.innerText = text;
+}
+
+// Reset handling
+form.addEventListener("reset", function() {
+    creditsDisplay.innerText = "Total Credits: 0";
+    timingDiv.classList.add("hidden");
+    message.innerText = "";
+});
+</script>
+
+</body>
+</html>
