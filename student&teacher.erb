@@ -1,7 +1,4 @@
-# =========================
-# PARENT CLASS
-# =========================
-
+# Parent Class
 class Person
   attr_accessor :name, :age
 
@@ -10,17 +7,14 @@ class Person
     @age = age
   end
 
-  # Method to display details
-  def details
-    "Name: #{@name}, Age: #{@age}"
+  # Parent method
+  def introduce
+    "Hi, I am #{@name} #{@age} years old."
   end
 end
 
 
-# =========================
-# CHILD CLASS: STUDENT
-# =========================
-
+# Child Class: Student
 class Student < Person
   attr_accessor :student_id
 
@@ -30,16 +24,13 @@ class Student < Person
   end
 
   # Override method
-  def details
-    "Student -> Name: #{@name}, Age: #{@age}, ID: #{@student_id}"
+  def introduce
+    "Hi, i am #{@name.downcase} #{@age} years old.my student id is #{@student_id}"
   end
 end
 
 
-# =========================
-# CHILD CLASS: TEACHER
-# =========================
-
+# Child Class: Teacher
 class Teacher < Person
   attr_accessor :subject
 
@@ -49,18 +40,16 @@ class Teacher < Person
   end
 
   # Override method
-  def details
-    "Teacher -> Name: #{@name}, Age: #{@age}, Subject: #{@subject}"
+  def introduce
+    "Hi, i am #{@name.downcase} #{@age} years old. I am teaching #{@subject.downcase}."
   end
 end
 
 
-# =========================
-# TESTING
-# =========================
-
+# Testing
 student = Student.new("Alice", 20, "S101")
-teacher = Teacher.new("Mr. John", 40, "Mathematics")
+teacher = Teacher.new("Mr. Kumar", 40, "Mathematics")
 
-puts student.details
-puts teacher.details
+puts student.introduce
+puts
+puts teacher.introduce
