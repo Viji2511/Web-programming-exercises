@@ -1,0 +1,91 @@
+🚀 STEP 1 — Create API Project
+rails new unit_converter_api --api
+cd unit_converter_api
+🚀 STEP 2 — Generate Controller
+rails generate controller api/conversions
+🚀 STEP 3 — ROUTES
+📌 config/routes.rb
+Rails.application.routes.draw do
+  namespace :api do
+    get 'convert', to: 'conversions#convert'
+  end
+end
+🚀 STEP 4 — CONTROLLER (MAIN LOGIC)
+📌 app/controllers/api/conversions_controller.rb
+module Api
+  class ConversionsController < ApplicationController
+
+    def convert
+      from = params[:from]
+      to = params[:to]
+      value = params[:value]
+
+      # ✅ VALIDATIONS
+      if from.blank? || to.blank? || value.blank?
+        return render json: { error: "Missing parameters" }, status: :bad_request
+      end
+
+      value = value.to_f
+
+      if value <= 0
+        return render json: { error: "Value must be greater than 0" }, status: :unprocessable_entity
+      end
+
+      result = nil
+
+      # ✅ CONVERSIONS
+      if from == "meter" && to == "kilometer"
+        result = value / 1000.0
+      elsif from == "kilometer" && to == "meter"
+        result = value * 1000.0
+      elsif from == "gram" && to == "kilogram"
+        result = value / 1000.0
+      elsif from == "kilogram" && to == "gram"
+        result = value * 1000.0
+      else
+        return render json: { error: "Invalid conversion type" }, status: :unprocessable_entity
+      end
+
+      # ✅ JSON RESPONSE
+      render json: {
+        from: from,
+        to: to,
+        input_value: value,
+        converted_value: result
+      }, status: :ok
+    end
+  end
+end
+🚀 STEP 5 — RUN SERVER
+rails server
+🧪 STEP 6 — TEST API
+✅ Example 1
+http://localhost:3000/api/convert?from=meter&to=kilometer&value=1000
+Output:
+{
+  "from": "meter",
+  "to": "kilometer",
+  "input_value": 1000.0,
+  "converted_value": 1.0
+}
+✅ Example 2
+http://localhost:3000/api/convert?from=gram&to=kilogram&value=500
+{
+  "from": "gram",
+  "to": "kilogram",
+  "input_value": 500.0,
+  "converted_value": 0.5
+}
+❌ Error Cases
+Missing input
+{ "error": "Missing parameters" }
+Invalid conversion
+{ "error": "Invalid conversion type" }
+📦 PROJECT STRUCTURE
+unit_converter_api/
+ ├── app/
+ │   └── controllers/
+ │       └── api/
+ │           └── conversions_controller.rb
+ ├── config/
+ │   └── routes.rb
