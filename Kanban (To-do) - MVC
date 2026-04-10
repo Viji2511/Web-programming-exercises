@@ -1,0 +1,178 @@
+steps to create rails:
+
+rails new appname
+cd appname
+rails generate resource Task title:string description:string status:string    (check the question for more parameters)
+rails db:migrate
+rails server
+
+code:
+
+edit: app/models/task.rb
+
+class Task < ApplicationRecord
+  validates :title, presence: true
+  validates :status, presence: true
+
+  STATUSES = ["todo", "in_progress", "done"]
+
+  validates :status, inclusion: { in: STATUSES }
+end
+
+edit: app/controllers/tasks_controller.rb
+
+class TasksController < ApplicationController
+  before_action :set_task, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @todo_tasks = Task.where(status: "todo")
+    @in_progress_tasks = Task.where(status: "in_progress")
+    @done_tasks = Task.where(status: "done")
+  end
+
+  def show
+  end
+
+  def new
+    @task = Task.new
+  end
+
+  def create
+    @task = Task.new(task_params)
+
+    if @task.save
+      redirect_to tasks_path, notice: "Task created successfully"
+    else
+      render :new
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @task.update(task_params)
+      redirect_to tasks_path, notice: "Task updated"
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @task.destroy
+    redirect_to tasks_path, notice: "Task deleted"
+  end
+
+  private
+
+  def set_task
+    @task = Task.find(params[:id])
+  end
+
+  def task_params
+    params.require(:task).permit(:title, :description, :status)
+  end
+end
+
+edit: config/routes.rb
+
+Rails.application.routes.draw do
+  root "tasks#index"
+  resources :tasks
+end
+
+
+create (if not already created): app/views/tasks/index.html.erb
+
+<h1>Kanban Board</h1>
+
+<div style="display: flex; gap: 20px;">
+  
+  <!-- TO DO -->
+  <div>
+    <h2>To Do</h2>
+    <% @todo_tasks.each do |task| %>
+      <div>
+        <strong><%= task.title %></strong><br>
+        <%= task.description %><br>
+        <%= link_to "Edit", edit_task_path(task) %> |
+        <%= link_to "Delete", task, method: :delete %>
+      </div>
+      <hr>
+    <% end %>
+  </div>
+
+  <!-- IN PROGRESS -->
+  <div>
+    <h2>In Progress</h2>
+    <% @in_progress_tasks.each do |task| %>
+      <div>
+        <strong><%= task.title %></strong><br>
+        <%= task.description %>
+      </div>
+      <hr>
+    <% end %>
+  </div>
+
+  <!-- DONE -->
+  <div>
+    <h2>Done</h2>
+    <% @done_tasks.each do |task| %>
+      <div>
+        <strong><%= task.title %></strong><br>
+        <%= task.description %>
+      </div>
+      <hr>
+    <% end %>
+  </div>
+
+</div>
+
+<br>
+<%= link_to "New Task", new_task_path %>
+
+create (if not already created): app/views/tasks/new.html.erb
+
+<h1>New Task</h1>
+
+<%= form_with model: @task do |f| %>
+  <div>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </div>
+
+  <div>
+    <%= f.label :description %><br>
+    <%= f.text_area :description %>
+  </div>
+
+  <div>
+    <%= f.label :status %><br>
+    <%= f.select :status, Task::STATUSES %>
+  </div>
+
+  <%= f.submit %>
+<% end %>
+
+create (if not already created): app/views/tasks/edit.html.erb
+
+<h1>Edit Task</h1>
+
+<%= form_with model: @task do |f| %>
+  <div>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </div>
+
+  <div>
+    <%= f.label :description %><br>
+    <%= f.text_area :description %>
+  </div>
+
+  <div>
+    <%= f.label :status %><br>
+    <%= f.select :status, Task::STATUSES %>
+  </div>
+
+  <%= f.submit "Update Task" %>
+<% end %>
