@@ -1,0 +1,89 @@
+# =========================
+# SUPERCLASS
+# =========================
+
+class Vehicle
+  attr_accessor :make, :model, :year, :vehicle_type
+
+  def initialize(make, model, year, vehicle_type)
+    @make = make
+    @model = model
+    @year = year
+    @vehicle_type = vehicle_type
+  end
+
+  # Method to get vehicle type
+  def get_vehicle_type
+    @vehicle_type
+  end
+
+  # Method to display details
+  def details
+    "Make: #{@make}, Model: #{@model}, Year: #{@year}, Type: #{@vehicle_type}"
+  end
+end
+
+
+# =========================
+# SUBCLASS: CAR
+# =========================
+
+class Car < Vehicle
+  def initialize(make, model, year)
+    super(make, model, year, "Car")
+  end
+
+  # Override details method
+  def details
+    "Car -> Make: #{@make}, Model: #{@model}, Year: #{@year}"
+  end
+end
+
+
+# =========================
+# SUBCLASS: BIKE
+# =========================
+
+class Bike < Vehicle
+  def initialize(make, model, year)
+    super(make, model, year, "Bike")
+  end
+
+  # Override details method
+  def details
+    "Bike -> Make: #{@make}, Model: #{@model}, Year: #{@year}"
+  end
+end
+
+
+# =========================
+# SUBCLASS: TRUCK
+# =========================
+
+class Truck < Vehicle
+  def initialize(make, model, year)
+    super(make, model, year, "Truck")
+  end
+
+  # Override details method
+  def details
+    "Truck -> Make: #{@make}, Model: #{@model}, Year: #{@year}"
+  end
+end
+
+
+# =========================
+# TESTING
+# =========================
+
+car = Car.new("Toyota", "Camry", 2022)
+bike = Bike.new("Yamaha", "R15", 2021)
+truck = Truck.new("Volvo", "FH", 2020)
+
+vehicles = [car, bike, truck]
+
+vehicles.each do |v|
+  puts v.details
+  puts "Vehicle Type: #{v.get_vehicle_type}"
+  puts "----------------------"
+end
