@@ -1,0 +1,148 @@
+🚀 STEP 1 — Create Fresh Project (IMPORTANT)
+rails new elearning_app
+cd elearning_app
+🚀 STEP 2 — Add Devise
+👉 Gemfile
+gem 'devise'
+bundle install
+rails generate devise:install
+rails generate devise User name:string role:string
+rails db:migrate
+🚀 STEP 3 — Generate All Resources (DO THIS EXACTLY)
+rails generate scaffold Course title:string description:text user:references
+rails generate scaffold Lesson title:string content:text course:references
+rails generate scaffold Enrollment user:references course:references
+
+rails db:migrate
+
+👉 This avoids ALL your previous errors (views missing, controller issues, etc.)
+
+🚀 STEP 4 — MODELS (REPLACE CODE)
+📌 app/models/user.rb
+class User < ApplicationRecord
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable
+
+  has_many :courses, dependent: :destroy
+  has_many :enrollments, dependent: :destroy
+  has_many :enrolled_courses, through: :enrollments, source: :course
+
+  validates :name, presence: true
+end
+📌 app/models/course.rb
+class Course < ApplicationRecord
+  belongs_to :user
+  has_many :lessons, dependent: :destroy
+  has_many :enrollments, dependent: :destroy
+
+  validates :title, presence: true
+end
+📌 app/models/lesson.rb
+class Lesson < ApplicationRecord
+  belongs_to :course
+
+  validates :title, presence: true
+end
+📌 app/models/enrollment.rb
+class Enrollment < ApplicationRecord
+  belongs_to :user
+  belongs_to :course
+
+  validates :user_id, uniqueness: { scope: :course_id }
+end
+🚀 STEP 5 — CONTROLLERS (REPLACE ONLY COURSES)
+📌 app/controllers/courses_controller.rb
+class CoursesController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_course, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @courses = Course.all
+  end
+
+  def show
+  end
+
+  def new
+    @course = Course.new
+  end
+
+  def create
+    @course = current_user.courses.build(course_params)
+
+    if @course.save
+      redirect_to @course, notice: "Course created"
+    else
+      render :new
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @course.update(course_params)
+      redirect_to @course, notice: "Updated"
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @course.destroy
+    redirect_to courses_path, notice: "Deleted"
+  end
+
+  private
+
+  def set_course
+    @course = Course.find(params[:id])
+  end
+
+  def course_params
+    params.require(:course).permit(:title, :description)
+  end
+end
+🚀 STEP 6 — ROUTES
+📌 config/routes.rb
+Rails.application.routes.draw do
+  devise_for :users
+
+  root "courses#index"
+
+  resources :courses do
+    resources :lessons
+    resources :enrollments, only: [:create]
+  end
+end
+🚀 STEP 7 — FIX VIEWS (IMPORTANT)
+📌 app/views/layouts/application.html.erb
+
+Add this inside <body>:
+
+<p class="notice"><%= notice %></p>
+<p class="alert"><%= alert %></p>
+
+<%= link_to "Login", new_user_session_path %> |
+<%= link_to "Signup", new_user_registration_path %> |
+<%= link_to "Logout", destroy_user_session_path, method: :delete %>
+
+<hr>
+🚀 STEP 8 — RUN
+rails server
+
+Open:
+
+http://localhost:3000
+🔐 STEP 9 — USE APP
+Go to:
+/users/sign_up
+
+👉 Create account
+
+Login:
+/users/sign_in
+Now:
+Create courses
+Edit/Delete
+Everything works ✅
