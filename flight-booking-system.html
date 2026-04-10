@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flight Booking System</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f6f9;
+}
+
+.container {
+    width: 400px;
+    margin: auto;
+    margin-top: 50px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gray;
+}
+
+h2 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px;
+    width: 48%;
+}
+
+.hidden {
+    display: none;
+}
+
+#priceDisplay {
+    margin-top: 15px;
+    font-weight: bold;
+    color: green;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Flight Booking</h2>
+
+    <form id="bookingForm">
+
+        <!-- Passenger Name -->
+        <label>Passenger Name:</label>
+        <input type="text" id="name">
+
+        <!-- Destination -->
+        <label>Destination:</label>
+        <input type="checkbox" name="dest" value="Chennai"> Chennai
+        <input type="checkbox" name="dest" value="Delhi"> Delhi
+        <input type="checkbox" name="dest" value="Mumbai"> Mumbai
+        <input type="checkbox" name="dest" value="Bangalore"> Bangalore
+
+        <!-- Travel Class -->
+        <label>Travel Class:</label>
+        <input type="radio" name="class" value="economy"> Economy
+        <input type="radio" name="class" value="business"> Business
+        <input type="radio" name="class" value="first"> First
+
+        <!-- Seat Preference -->
+        <div id="seatDiv" class="hidden">
+            <label>Seat Preference:</label>
+            <select id="seat">
+                <option>Window</option>
+                <option>Aisle</option>
+            </select>
+        </div>
+
+        <!-- Price -->
+        <div id="priceDisplay">Price: ₹0</div>
+
+        <!-- Buttons -->
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+
+    </form>
+</div>
+
+<script>
+const form = document.getElementById("bookingForm");
+const priceDisplay = document.getElementById("priceDisplay");
+const seatDiv = document.getElementById("seatDiv");
+
+// Price Data
+const basePrice = {
+    Chennai: 2000,
+    Delhi: 4000,
+    Mumbai: 3500,
+    Bangalore: 2500
+};
+
+const classMultiplier = {
+    economy: 1,
+    business: 1.5,
+    first: 2
+};
+
+// Show/Hide Seat Preference
+document.querySelectorAll("input[name='class']").forEach(radio => {
+    radio.addEventListener("change", () => {
+        if (radio.value === "business" || radio.value === "first") {
+            seatDiv.classList.remove("hidden");
+        } else {
+            seatDiv.classList.add("hidden");
+        }
+        calculatePrice();
+    });
+});
+
+// Destination change
+document.querySelectorAll("input[name='dest']").forEach(cb => {
+    cb.addEventListener("change", calculatePrice);
+});
+
+// Calculate Price
+function calculatePrice() {
+    let destinations = document.querySelectorAll("input[name='dest']:checked");
+    let travelClass = document.querySelector("input[name='class']:checked");
+
+    if (!travelClass || destinations.length === 0) {
+        priceDisplay.innerText = "Price: ₹0";
+        return;
+    }
+
+    let total = 0;
+    destinations.forEach(dest => {
+        total += basePrice[dest.value];
+    });
+
+    total *= classMultiplier[travelClass.value];
+
+    priceDisplay.innerText = "Price: ₹" + total;
+}
+
+// Validation + AJAX simulation
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let name = document.getElementById("name").value.trim();
+    let destinations = document.querySelectorAll("input[name='dest']:checked");
+    let travelClass = document.querySelector("input[name='class']:checked");
+
+    // Name validation
+    if (name.length < 2) {
+        alert("Name must be at least 2 characters");
+        return;
+    }
+
+    // Destination validation
+    if (destinations.length === 0) {
+        alert("Select at least one destination");
+        return;
+    }
+
+    // Class validation
+    if (!travelClass) {
+        alert("Select a travel class");
+        return;
+    }
+
+    // Simulate AJAX
+    let data = {
+        name: name,
+        destinations: Array.from(destinations).map(d => d.value),
+        class: travelClass.value,
+        seat: document.getElementById("seat").value
+    };
+
+    console.log("Sending data to server:", data);
+
+    // Fake AJAX call
+    setTimeout(() => {
+        alert("Booking Successful!");
+    }, 1000);
+});
+</script>
+
+</body>
+</html>
