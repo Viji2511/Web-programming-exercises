@@ -1,0 +1,148 @@
+🚀 STEP 1 — Create Project
+rails new college_app
+cd college_app
+🚀 STEP 2 — Generate Resources (IMPORTANT: use scaffold)
+rails generate scaffold Student name:string email:string
+rails generate scaffold Course name:string instructor:string
+rails generate scaffold Lesson name:string description:text course:references
+rails generate scaffold Enrollment student:references course:references
+
+rails db:migrate
+🧠 STEP 3 — MODELS (REPLACE CODE)
+📌 app/models/student.rb
+class Student < ApplicationRecord
+  has_many :enrollments, dependent: :destroy
+  has_many :courses, through: :enrollments
+
+  validates :name, presence: true
+  validates :email, presence: true, uniqueness: true
+end
+📌 app/models/course.rb
+class Course < ApplicationRecord
+  has_many :enrollments, dependent: :destroy
+  has_many :students, through: :enrollments
+  has_many :lessons, dependent: :destroy
+
+  validates :name, presence: true
+  validates :instructor, presence: true
+end
+📌 app/models/lesson.rb
+class Lesson < ApplicationRecord
+  belongs_to :course
+
+  validates :name, presence: true
+end
+📌 app/models/enrollment.rb
+class Enrollment < ApplicationRecord
+  belongs_to :student
+  belongs_to :course
+
+  # ❗ Prevent duplicate enrollment
+  validates :student_id, uniqueness: { scope: :course_id, message: "already enrolled in this course" }
+end
+🎮 STEP 4 — CONTROLLER FIX (IMPORTANT)
+📌 app/controllers/enrollments_controller.rb
+
+Replace with:
+
+class EnrollmentsController < ApplicationController
+  before_action :set_enrollment, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @enrollments = Enrollment.all
+  end
+
+  def new
+    @enrollment = Enrollment.new
+  end
+
+  def create
+    @enrollment = Enrollment.new(enrollment_params)
+
+    if @enrollment.save
+      redirect_to enrollments_path, notice: "Enrollment successful"
+    else
+      redirect_to new_enrollment_path, alert: @enrollment.errors.full_messages.to_sentence
+    end
+  end
+
+  def destroy
+    @enrollment.destroy
+    redirect_to enrollments_path, notice: "Enrollment removed"
+  end
+
+  private
+
+  def set_enrollment
+    @enrollment = Enrollment.find(params[:id])
+  end
+
+  def enrollment_params
+    params.require(:enrollment).permit(:student_id, :course_id)
+  end
+end
+🛣️ STEP 5 — ROUTES
+📌 config/routes.rb
+Rails.application.routes.draw do
+  root "students#index"
+
+  resources :students
+  resources :courses
+  resources :lessons
+  resources :enrollments
+end
+🎨 STEP 6 — FIX IMPORTANT VIEWS
+📌 app/views/enrollments/new.html.erb
+<h1>Enroll Student</h1>
+
+<%= form_with model: @enrollment do |f| %>
+
+  <div>
+    <%= f.label :student %>
+    <%= f.collection_select :student_id, Student.all, :id, :name %>
+  </div>
+
+  <div>
+    <%= f.label :course %>
+    <%= f.collection_select :course_id, Course.all, :id, :name %>
+  </div>
+
+  <%= f.submit "Enroll" %>
+
+<% end %>
+📌 app/views/enrollments/index.html.erb
+<h1>Enrollments</h1>
+
+<% @enrollments.each do |e| %>
+  <p>
+    <strong><%= e.student.name %></strong> enrolled in
+    <strong><%= e.course.name %></strong>
+  </p>
+<% end %>
+
+<%= link_to "New Enrollment", new_enrollment_path %>
+📌 app/views/layouts/application.html.erb
+
+Inside <body> add:
+
+<p class="notice"><%= notice %></p>
+<p class="alert"><%= alert %></p>
+
+<%= link_to "Students", students_path %> |
+<%= link_to "Courses", courses_path %> |
+<%= link_to "Lessons", lessons_path %> |
+<%= link_to "Enrollments", enrollments_path %>
+
+<hr>
+🚀 STEP 7 — RUN
+rails server
+
+Open:
+
+http://localhost:3000
+✅ HOW TO USE
+Create Students
+Create Courses
+Add Lessons to Courses
+Go to Enrollments → New Enrollment
+Enroll student
