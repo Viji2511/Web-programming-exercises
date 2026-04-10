@@ -1,0 +1,87 @@
+🚀 STEP 1 — Create API Project
+rails new currency_api --api
+cd currency_api
+🚀 STEP 2 — Generate Controller
+rails generate controller api/conversions
+🚀 STEP 3 — ROUTES
+📌 config/routes.rb
+Rails.application.routes.draw do
+  namespace :api do
+    get 'convert', to: 'conversions#convert'
+  end
+end
+🚀 STEP 4 — CONTROLLER (MAIN LOGIC)
+📌 app/controllers/api/conversions_controller.rb
+module Api
+  class ConversionsController < ApplicationController
+
+    def convert
+      from = params[:from]
+      to = params[:to]
+      amount = params[:amount]
+
+      # ✅ VALIDATIONS
+      if from.blank? || to.blank? || amount.blank?
+        return render json: { error: "Missing parameters" }, status: :bad_request
+      end
+
+      amount = amount.to_f
+
+      if amount <= 0
+        return render json: { error: "Amount must be greater than 0" }, status: :unprocessable_entity
+      end
+
+      # ✅ STATIC EXCHANGE RATES (no external API = no errors)
+      rates = {
+        "USD" => 1.0,
+        "INR" => 83.0,
+        "EUR" => 0.9,
+        "GBP" => 0.78
+      }
+
+      if !rates.key?(from) || !rates.key?(to)
+        return render json: { error: "Invalid currency" }, status: :unprocessable_entity
+      end
+
+      # ✅ CONVERSION LOGIC
+      usd_amount = amount / rates[from]
+      converted = usd_amount * rates[to]
+
+      render json: {
+        from: from,
+        to: to,
+        original_amount: amount,
+        converted_amount: converted.round(2)
+      }, status: :ok
+    end
+  end
+end
+🚀 STEP 5 — RUN SERVER
+rails server
+🧪 STEP 6 — TEST API
+✅ Example 1
+http://localhost:3000/api/convert?from=USD&to=INR&amount=10
+✅ Output
+{
+  "from": "USD",
+  "to": "INR",
+  "original_amount": 10.0,
+  "converted_amount": 830.0
+}
+❌ Example (Invalid input)
+http://localhost:3000/api/convert?from=USD&amount=10
+{
+  "error": "Missing parameters"
+}
+❌ Example (Wrong currency)
+{
+  "error": "Invalid currency"
+}
+📦 PROJECT STRUCTURE
+currency_api/
+ ├── app/
+ │   └── controllers/
+ │       └── api/
+ │           └── conversions_controller.rb
+ ├── config/
+ │   └── routes.rb
