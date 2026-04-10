@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Overlapping Images Hover Effect</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container */
+.container {
+    position: relative;
+    width: 600px;
+    height: 400px;
+}
+
+/* Images */
+.container img {
+    position: absolute;
+    width: 200px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+
+/* Overlapping positions */
+.img1 { top: 50px; left: 50px; z-index: 1; }
+.img2 { top: 80px; left: 150px; z-index: 2; }
+.img3 { top: 110px; left: 250px; z-index: 3; }
+
+/* Hover Effect */
+.container img:hover {
+    transform: scale(1.3);
+    z-index: 10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <img src="https://picsum.photos/id/1015/300/400" class="img1">
+    <img src="https://picsum.photos/id/1016/300/400" class="img2">
+    <img src="https://picsum.photos/id/1018/300/400" class="img3">
+</div>
+
+<script>
+// Optional JS (for extra interaction)
+
+const images = document.querySelectorAll(".container img");
+
+images.forEach(img => {
+    img.addEventListener("mouseenter", () => {
+        img.style.transform = "scale(1.3)";
+    });
+
+    img.addEventListener("mouseleave", () => {
+        img.style.transform = "scale(1)";
+    });
+});
+</script>
+
+</body>
+</html>
