@@ -1,0 +1,36 @@
+# Function to calculate grade
+def calculate_grade(score)
+  case score
+  when 90..100
+    "A"
+  when 75...90
+    "B"
+  when 60...75
+    "C"
+  when 50...60
+    "D"
+  else
+    "F"
+  end
+end
+
+# List of students (name + score)
+students = [
+  { name: "Alice", score: 92 },
+  { name: "Bob", score: 76 },
+  { name: "Charlie", score: 64 },
+  { name: "David", score: 48 }
+]
+
+# Display summary
+puts "Student Summary:"
+puts "-------------------------"
+
+students.each do |student|
+  grade = calculate_grade(student[:score])
+
+  puts "Name: #{student[:name]}"
+  puts "Score: #{student[:score]}"
+  puts "Grade: #{grade}"
+  puts "-------------------------"
+end
