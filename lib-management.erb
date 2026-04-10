@@ -1,0 +1,225 @@
+# =========================
+# MODELS
+# =========================
+
+# app/models/student.rb
+class Student < ApplicationRecord
+  has_many :issues, dependent: :destroy
+  has_many :books, through: :issues
+
+  validates :name, presence: true
+  validates :email, presence: true, uniqueness: true
+end
+
+
+# app/models/book.rb
+class Book < ApplicationRecord
+  has_many :issues, dependent: :destroy
+  has_many :students, through: :issues
+
+  validates :title, presence: true
+  validates :author, presence: true
+end
+
+
+# app/models/issue.rb
+class Issue < ApplicationRecord
+  belongs_to :student
+  belongs_to :book
+
+  validates :issue_date, presence: true
+
+  validate :book_available
+
+  def book_available
+    if book && !book.available
+      errors.add(:book, "is not available")
+    end
+  end
+end
+
+
+# =========================
+# CONTROLLERS
+# =========================
+
+# app/controllers/students_controller.rb
+class StudentsController < ApplicationController
+  before_action :set_student, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @students = Student.all
+  end
+
+  def show
+  end
+
+  def new
+    @student = Student.new
+  end
+
+  def create
+    @student = Student.new(student_params)
+    if @student.save
+      redirect_to @student
+    else
+      render :new
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @student.update(student_params)
+      redirect_to @student
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @student.destroy
+    redirect_to students_path
+  end
+
+  private
+
+  def set_student
+    @student = Student.find(params[:id])
+  end
+
+  def student_params
+    params.require(:student).permit(:name, :email)
+  end
+end
+
+
+# app/controllers/books_controller.rb
+class BooksController < ApplicationController
+  before_action :set_book, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @books = Book.all
+  end
+
+  def show
+  end
+
+  def new
+    @book = Book.new
+  end
+
+  def create
+    @book = Book.new(book_params)
+    if @book.save
+      redirect_to @book
+    else
+      render :new
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @book.update(book_params)
+      redirect_to @book
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @book.destroy
+    redirect_to books_path
+  end
+
+  private
+
+  def set_book
+    @book = Book.find(params[:id])
+  end
+
+  def book_params
+    params.require(:book).permit(:title, :author, :available)
+  end
+end
+
+
+# app/controllers/issues_controller.rb
+class IssuesController < ApplicationController
+  before_action :set_issue, only: [:show, :edit, :update, :destroy, :return_book]
+
+  def index
+    @issues = Issue.all
+  end
+
+  def show
+  end
+
+  def new
+    @issue = Issue.new
+  end
+
+  def create
+    @issue = Issue.new(issue_params)
+
+    if @issue.save
+      @issue.book.update(available: false)
+      redirect_to issues_path, notice: "Book issued successfully"
+    else
+      redirect_to new_issue_path, alert: @issue.errors.full_messages.to_sentence
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @issue.update(issue_params)
+      redirect_to @issue
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @issue.destroy
+    redirect_to issues_path
+  end
+
+  def return_book
+    @issue.update(return_date: Date.today)
+    @issue.book.update(available: true)
+    redirect_to issues_path, notice: "Book returned successfully"
+  end
+
+  private
+
+  def set_issue
+    @issue = Issue.find(params[:id])
+  end
+
+  def issue_params
+    params.require(:issue).permit(:student_id, :book_id, :issue_date)
+  end
+end
+
+
+# =========================
+# ROUTES
+# =========================
+
+# config/routes.rb
+Rails.application.routes.draw do
+  root "books#index"
+
+  resources :students
+  resources :books
+  resources :issues do
+    member do
+      patch :return_book
+    end
+  end
+end
