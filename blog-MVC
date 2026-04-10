@@ -1,0 +1,220 @@
+🚀 STEP 1 — Create Project
+rails new blog_app
+cd blog_app
+
+🚀 STEP 2 — Add Devise (Authentication)
+Gemfile
+gem 'devise'
+bundle install
+rails generate devise:install
+rails generate devise User name:string
+rails db:migrate
+🚀 STEP 3 — Add Rich Text (IMPORTANT)
+rails action_text:install
+rails db:migrate
+🚀 STEP 4 — Generate Models (Use Scaffold to avoid errors)
+rails generate scaffold Category name:string
+rails generate scaffold Post title:string user:references category:references
+rails generate scaffold Comment content:text user:references post:references
+
+rails db:migrate
+🚀 STEP 5 — MODELS (REPLACE CODE)
+📌 app/models/user.rb
+class User < ApplicationRecord
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable
+
+  has_many :posts, dependent: :destroy
+  has_many :comments, dependent: :destroy
+
+  validates :name, presence: true
+end
+📌 app/models/post.rb
+class Post < ApplicationRecord
+  belongs_to :user
+  belongs_to :category
+
+  has_many :comments, dependent: :destroy
+
+  has_rich_text :content   # 🔥 Rich Text
+
+  validates :title, presence: true
+end
+📌 app/models/category.rb
+class Category < ApplicationRecord
+  has_many :posts
+
+  validates :name, presence: true
+end
+📌 app/models/comment.rb
+class Comment < ApplicationRecord
+  belongs_to :user
+  belongs_to :post
+
+  validates :content, presence: true
+end
+🚀 STEP 6 — ADD TAGS (Simple version)
+Generate Tag + Join Table
+rails generate model Tag name:string
+rails generate model PostTag post:references tag:references
+rails db:migrate
+📌 app/models/tag.rb
+class Tag < ApplicationRecord
+  has_many :post_tags
+  has_many :posts, through: :post_tags
+end
+📌 app/models/post_tag.rb
+class PostTag < ApplicationRecord
+  belongs_to :post
+  belongs_to :tag
+end
+Update Post Model
+has_many :post_tags
+has_many :tags, through: :post_tags
+🚀 STEP 7 — CONTROLLERS FIX
+📌 app/controllers/posts_controller.rb
+
+Replace with:
+
+class PostsController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_post, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @posts = Post.all
+  end
+
+  def show
+    @comment = Comment.new
+  end
+
+  def new
+    @post = Post.new
+  end
+
+  def create
+    @post = current_user.posts.build(post_params)
+
+    if @post.save
+      redirect_to @post, notice: "Post created"
+    else
+      render :new
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @post.update(post_params)
+      redirect_to @post, notice: "Updated"
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @post.destroy
+    redirect_to posts_path
+  end
+
+  private
+
+  def set_post
+    @post = Post.find(params[:id])
+  end
+
+  def post_params
+    params.require(:post).permit(:title, :category_id, :content)
+  end
+end
+🚀 STEP 8 — COMMENTS CONTROLLER
+📌 app/controllers/comments_controller.rb
+class CommentsController < ApplicationController
+  before_action :authenticate_user!
+
+  def create
+    post = Post.find(params[:post_id])
+    comment = post.comments.build(comment_params)
+    comment.user = current_user
+
+    if comment.save
+      redirect_to post
+    else
+      redirect_to post, alert: "Error adding comment"
+    end
+  end
+
+  private
+
+  def comment_params
+    params.require(:comment).permit(:content)
+  end
+end
+🚀 STEP 9 — ROUTES
+📌 config/routes.rb
+Rails.application.routes.draw do
+  devise_for :users
+
+  root "posts#index"
+
+  resources :categories
+  resources :posts do
+    resources :comments, only: [:create]
+  end
+end
+🚀 STEP 10 — FIX VIEWS (IMPORTANT)
+📌 app/views/posts/_form.html.erb
+<%= form_with(model: post) do |f| %>
+
+  <%= f.label :title %>
+  <%= f.text_field :title %>
+
+  <%= f.label :category %>
+  <%= f.collection_select :category_id, Category.all, :id, :name %>
+
+  <%= f.label :content %>
+  <%= f.rich_text_area :content %>  <!-- 🔥 Rich Text -->
+
+  <%= f.submit %>
+<% end %>
+📌 app/views/posts/show.html.erb
+<h1><%= @post.title %></h1>
+
+<p><%= @post.content %></p>
+
+<h3>Comments</h3>
+
+<% @post.comments.each do |c| %>
+  <p><strong><%= c.user.name %>:</strong> <%= c.content %></p>
+<% end %>
+
+<h4>Add Comment</h4>
+
+<%= form_with(model: [@post, @comment]) do |f| %>
+  <%= f.text_area :content %>
+  <%= f.submit "Comment" %>
+<% end %>
+📌 app/views/layouts/application.html.erb
+
+Inside <body> add:
+
+<p><%= notice %></p>
+<p><%= alert %></p>
+
+<%= link_to "Home", root_path %> |
+<%= link_to "Posts", posts_path %> |
+<%= link_to "Categories", categories_path %> |
+<%= link_to "Login", new_user_session_path %> |
+<%= link_to "Signup", new_user_registration_path %> |
+<%= link_to "Logout", destroy_user_session_path, method: :delete %>
+
+<hr>
+🚀 STEP 11 — RUN
+rails server
+🔐 STEP 12 — USE APP
+Signup → /users/sign_up
+Login → /users/sign_in
+Create category
+Create post (rich text works)
+Add comments
