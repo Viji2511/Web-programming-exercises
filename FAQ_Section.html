@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FAQ Section</title>
+
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f5f5;
+      padding: 40px;
+    }
+
+    .faq-container {
+      width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .faq-item {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .question {
+      cursor: pointer;
+      padding: 10px;
+      font-weight: bold;
+      background: #e3e3e3;
+    }
+
+    .answer {
+      display: none;
+      padding: 10px;
+      background: #fafafa;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="faq-container">
+  <h2>FAQ</h2>
+
+  <div class="faq-item">
+    <div class="question">What is Ruby on Rails?</div>
+    <div class="answer">Ruby on Rails is a web development framework written in Ruby.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="question">What is MVC?</div>
+    <div class="answer">MVC stands for Model View Controller architecture.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="question">What is jQuery?</div>
+    <div class="answer">jQuery is a JavaScript library used for DOM manipulation.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="question">What is AJAX?</div>
+    <div class="answer">AJAX allows asynchronous communication with the server.</div>
+  </div>
+
+</div>
+
+<script>
+  $(document).ready(function(){
+
+    $(".question").click(function(){
+
+      let answer = $(this).next(".answer");
+
+      // Close all other answers
+      $(".answer").not(answer).slideUp();
+
+      // Toggle current answer
+      answer.slideToggle();
+
+    });
+
+  });
+</script>
+
+</body>
+</html>
