@@ -1,0 +1,66 @@
+# =========================
+# PARENT CLASS
+# =========================
+
+class Person
+  attr_accessor :name, :age
+
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+
+  # Method to display details
+  def details
+    "Name: #{@name}, Age: #{@age}"
+  end
+end
+
+
+# =========================
+# CHILD CLASS: STUDENT
+# =========================
+
+class Student < Person
+  attr_accessor :student_id
+
+  def initialize(name, age, student_id)
+    super(name, age)
+    @student_id = student_id
+  end
+
+  # Override method
+  def details
+    "Student -> Name: #{@name}, Age: #{@age}, ID: #{@student_id}"
+  end
+end
+
+
+# =========================
+# CHILD CLASS: TEACHER
+# =========================
+
+class Teacher < Person
+  attr_accessor :subject
+
+  def initialize(name, age, subject)
+    super(name, age)
+    @subject = subject
+  end
+
+  # Override method
+  def details
+    "Teacher -> Name: #{@name}, Age: #{@age}, Subject: #{@subject}"
+  end
+end
+
+
+# =========================
+# TESTING
+# =========================
+
+student = Student.new("Alice", 20, "S101")
+teacher = Teacher.new("Mr. John", 40, "Mathematics")
+
+puts student.details
+puts teacher.details
